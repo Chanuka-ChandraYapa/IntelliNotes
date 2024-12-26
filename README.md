@@ -1,5 +1,7 @@
 # IntelliNotes - AI-Assisted Notes Application
 
+![.](assets/cover.png)
+
 ## Description
 
 **IntelliNotes** is a Flutter-based notes application that integrates AI assistance to help users manage their notes efficiently. The app allows users to write, view, and store notes, and it also leverages AI-powered responses to summarize, analyze, and offer insightful suggestions based on the content of the notes. By interacting with an AI model (such as Hugging Face's Mistral-7B), IntelliNotes makes your note-taking experience more engaging and productive by providing personalized assistance based on the notes you've written.
