@@ -59,10 +59,11 @@ class _HomeScreenState extends State<HomeScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            final notes = snapshot.data!.reversed.toList();
             return ListView.builder(
-              itemCount: snapshot.data!.length,
+              itemCount: notes.length,
               itemBuilder: (context, index) {
-                final note = snapshot.data![index];
+                final note = notes[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(
                       horizontal: 16.0, vertical: 8.0),
