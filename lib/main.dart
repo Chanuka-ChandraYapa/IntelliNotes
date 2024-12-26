@@ -21,12 +21,12 @@ class DiaryApp extends StatelessWidget {
     return MaterialApp(
       title: 'Diary App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        // primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         brightness: Brightness.light, // Light theme
       ),
       darkTheme: ThemeData(
-        primarySwatch: Colors.blue,
+        // primarySwatch: Colors.deepPurple,
         visualDensity: VisualDensity.adaptivePlatformDensity,
         brightness: Brightness.dark, // Dark theme
       ),

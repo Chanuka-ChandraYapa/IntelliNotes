@@ -18,7 +18,11 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path, version: 2, // Incremented version for schema updates
+      onCreate: _createDB,
+      onUpgrade: _onUpgrade,
+    );
   }
 
   Future _createDB(Database db, int version) async {
@@ -27,14 +31,22 @@ class DatabaseHelper {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
       content TEXT NOT NULL,
-      date TEXT NOT NULL
+      date TEXT NOT NULL,
+      imagePath TEXT
     )
     ''');
   }
 
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add the `imagePath` column in version 2
+      await db.execute('ALTER TABLE notes ADD COLUMN imagePath TEXT');
+    }
+  }
+
   Future<List<Note>> getNotes() async {
     final db = await instance.database;
-    final result = await db.query('notes');
+    final result = await db.query('notes', orderBy: 'date DESC');
     return result.map((json) => Note.fromMap(json)).toList();
   }
 
@@ -60,6 +72,11 @@ class DatabaseHelper {
 
   Future<String> getNoteContents() async {
     final notes = await DatabaseHelper.instance.getNotes();
-    return notes.map((note) => note.content).join('\n\n');
+    return notes.map((note) {
+      final words = note.content.split(' ');
+      final trimmedContent =
+          words.length > 25 ? words.take(25).join(' ') + '...' : note.content;
+      return trimmedContent;
+    }).join('\n\n');
   }
 }

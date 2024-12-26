@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import '../models/note.dart';
 import '../helpers/database_helper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+// import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 
 class NoteScreen extends StatefulWidget {
   final Note? note;
@@ -17,6 +20,8 @@ class _NoteScreenState extends State<NoteScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   bool _isExtending = false;
+  File? _selectedImage;
+
   final String _huggingFaceAPI =
       'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions';
 
@@ -29,6 +34,9 @@ class _NoteScreenState extends State<NoteScreen> {
     if (widget.note != null) {
       _titleController.text = widget.note!.title;
       _contentController.text = widget.note!.content;
+      if (widget.note!.imagePath != null) {
+        _selectedImage = File(widget.note!.imagePath!);
+      }
     }
   }
 
@@ -37,6 +45,36 @@ class _NoteScreenState extends State<NoteScreen> {
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
+  }
+
+  // Future<void> _pickImage() async {
+  //   final ImagePicker picker = ImagePicker();
+  //   final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+  //   if (image != null) {
+  //     setState(() {
+  //       _selectedImage = File(image.path);
+  //     });
+  //   }
+  // }
+
+  Future<void> _pickImage() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _selectedImage = File(result.files.single.path!);
+        });
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to pick an image.')),
+      );
+    }
   }
 
   Future<void> _saveNote() async {
@@ -55,6 +93,7 @@ class _NoteScreenState extends State<NoteScreen> {
       title: title,
       content: content,
       date: DateTime.now(),
+      imagePath: _selectedImage?.path,
     );
 
     if (widget.note == null) {
@@ -171,10 +210,21 @@ class _NoteScreenState extends State<NoteScreen> {
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 16),
+            if (_selectedImage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Image.file(
+                  _selectedImage!,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            const SizedBox(height: 16),
             TextField(
               controller: _contentController,
               decoration: const InputDecoration(labelText: 'Content'),
-              maxLines: 20,
+              maxLines: 5,
               keyboardType: TextInputType.multiline,
             ),
           ],
@@ -192,6 +242,13 @@ class _NoteScreenState extends State<NoteScreen> {
                   )
                 : const Icon(Icons.auto_fix_high),
             tooltip: 'Extend Content',
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'addImage',
+            onPressed: _pickImage,
+            child: const Icon(Icons.add_photo_alternate),
+            tooltip: 'Add Image',
           ),
           const SizedBox(height: 16),
           FloatingActionButton(

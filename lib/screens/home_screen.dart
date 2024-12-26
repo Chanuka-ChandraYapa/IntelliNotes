@@ -5,6 +5,7 @@ import '../screens/note_screen.dart';
 import '../screens/chat_screen.dart'; // Import Chat Screen
 import 'package:intl/intl.dart'; // Add intl package for date formatting.
 import 'note_view_screen.dart';
+import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -59,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            final notes = snapshot.data!.reversed.toList();
+            final notes = snapshot.data!.toList();
             return ListView.builder(
               itemCount: notes.length,
               itemBuilder: (context, index) {
@@ -67,29 +68,47 @@ class _HomeScreenState extends State<HomeScreen> {
                 return Card(
                   margin: const EdgeInsets.symmetric(
                       horizontal: 16.0, vertical: 8.0),
-                  child: ListTile(
-                    title: Text(
-                      note.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        note.content.length > 50
-                            ? '${note.content.substring(0, 50)}...'
-                            : note.content,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (note.imagePath != null && note.imagePath!.isNotEmpty)
+                        ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(8.0),
+                            topRight: Radius.circular(8.0),
+                          ),
+                          child: Image.file(
+                            File(note.imagePath!),
+                            width: double.infinity,
+                            height: 150,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ListTile(
+                        title: Text(
+                          note.title,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            note.content.length > 50
+                                ? '${note.content.substring(0, 50)}...'
+                                : note.content,
+                          ),
+                        ),
+                        trailing: Text(
+                          _formatDate(note.date),
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => NoteViewScreen(note: note),
+                          ),
+                        ).then((_) => setState(() => _loadNotes())),
                       ),
-                    ),
-                    trailing: Text(
-                      _formatDate(note.date),
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => NoteViewScreen(note: note),
-                      ),
-                    ).then((_) => setState(() => _loadNotes())),
+                    ],
                   ),
                 );
               },

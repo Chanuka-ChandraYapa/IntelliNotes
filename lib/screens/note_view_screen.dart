@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/note.dart';
 import 'note_screen.dart';
+import 'dart:io';
 
 class NoteViewScreen extends StatelessWidget {
   final Note note;
@@ -26,6 +27,16 @@ class NoteViewScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            if (note.imagePath != null && note.imagePath!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Image.file(
+                  File(note.imagePath!),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 200,
+                ),
+              ),
             Expanded(
               child: SingleChildScrollView(
                 child: Text(
