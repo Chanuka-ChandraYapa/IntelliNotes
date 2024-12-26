@@ -15,7 +15,7 @@ class _ChatScreenState extends State<ChatScreen> {
       'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions';
 
   // Replace with your Hugging Face API token
-  final String _apiToken = '**************************';
+  final String _apiToken = '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';
 
   // Store the conversation history for context
   List<Map<String, String>> _conversationHistory = [];
@@ -80,6 +80,44 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages
             .add({'sender': 'bot', 'message': 'Error: Something went wrong.'});
       });
+    }
+  }
+
+  Future<void> _sendSingleMessage(String message) async {
+    try {
+      final response = await http.post(
+        Uri.parse(_huggingFaceAPI),
+        headers: {
+          'Authorization': 'Bearer $_apiToken',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'model': 'mistralai/Mistral-7B-Instruct-v0.3',
+          'messages': [
+            {
+              'role': 'user',
+              'content':
+                  'Extend the following content according to the context, structure, and style. Content: $message'
+            }
+          ],
+          'max_tokens': 500,
+          'stream': false,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        // Extract the bot's response
+        final botResponse =
+            data['choices'][0]['message']['content'] ?? 'No response received.';
+
+        return botResponse;
+      } else {
+        throw Exception('Failed to extend note');
+      }
+    } catch (e) {
+      throw Exception('Error: Something went wrong');
     }
   }
 
